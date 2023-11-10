@@ -1,0 +1,234 @@
+package num_init
+
+import (
+	"strconv"
+)
+
+//Number
+type Calculable interface {
+	Add(Calculable) Calculable
+	Sub(Calculable) Calculable
+	Mul(Calculable) Calculable
+	Div(Calculable) Calculable
+	Inverse() Calculable
+	GetValue() string
+	GetChecker() int
+}
+
+type Int struct {
+	Number  int
+	checker int
+}
+
+func NewInt(Num int) *Int {
+	I := Int{}
+	I.Number = Num
+	I.checker = 0
+	return &I
+}
+
+//Int형은 Int형끼리만 계산하며, 더 넓은 범위의 수에 대해선 더 넓은 범위의 수의 연산규칙에 따름
+func (I Int) Add(C Calculable) Calculable {
+	var a, b int
+	a, _ = strconv.Atoi(I.GetValue())
+	if C.GetChecker() == 0 {
+		b, _ = strconv.Atoi(C.GetValue())
+		var temp int = a + b
+		return NewInt(temp)
+	} else {
+		return C.Add(I)
+	}
+}
+
+func (I Int) Sub(C Calculable) Calculable {
+	var a, b int
+	a, _ = strconv.Atoi(I.GetValue())
+	if C.GetChecker() == 0 {
+		a, _ = strconv.Atoi(I.GetValue())
+		b, _ = strconv.Atoi(C.GetValue())
+		var temp int = a - b
+		return NewInt(temp)
+	} else {
+		return C.Sub(I).Mul(NewInt(-1))
+	}
+}
+
+func (I Int) Mul(C Calculable) Calculable {
+	var a, b int
+	a, _ = strconv.Atoi(I.GetValue())
+	if C.GetChecker() == 0 {
+		a, _ = strconv.Atoi(I.GetValue())
+		b, _ = strconv.Atoi(C.GetValue())
+		var temp int = a * b
+		return NewInt(temp)
+	} else {
+		return C.Mul(I)
+	}
+}
+
+func (I Int) Div(C Calculable) Calculable {
+	var a, b int
+	a, _ = strconv.Atoi(I.GetValue())
+	if C.GetChecker() == 0 {
+		a, _ = strconv.Atoi(I.GetValue())
+		b, _ = strconv.Atoi(C.GetValue())
+		var temp float64 = float64(a) / float64(b)
+		var temp_i int = int(temp)
+		if temp == float64(temp_i) {
+			return NewInt(temp_i)
+		}
+		return NewFloat(temp)
+	} else if C.GetChecker() == 100 {
+		var a_f float64 = float64(a)
+		var b_f float64
+		b_f, _ = strconv.ParseFloat(C.GetValue(), 32)
+		var temp float64 = a_f / b_f
+		var temp_i int = int(temp)
+		if temp == float64(temp_i) {
+			return NewInt(temp_i)
+		}
+		return NewFloat(temp)
+	} else {
+		return I.Mul(C.Inverse())
+	}
+}
+
+func (I Int) Inverse() Calculable {
+	var temp float64
+	temp = float64(1) / float64(I.Number)
+	var temp_i int = int(temp)
+	if temp == float64(temp_i) {
+		return NewInt(temp_i)
+	}
+	return NewFloat(temp)
+}
+
+func (I Int) GetValue() string {
+	return strconv.Itoa(I.Number)
+}
+
+func (I Int) GetChecker() int {
+	return I.checker
+}
+
+type Float struct {
+	Number  float64
+	checker int
+}
+
+func NewFloat(Num float64) *Float {
+	F := Float{}
+	F.Number = Num
+	F.checker = 100
+	return &F
+}
+
+func (F Float) Add(C Calculable) Calculable {
+	var a, b float64
+	var tempt int
+	a, _ = strconv.ParseFloat(F.GetValue(), 32)
+	if C.GetChecker() == 0 || C.GetChecker() == 100 {
+		if C.GetChecker() == 0 {
+			tempt, _ = strconv.Atoi(C.GetValue())
+			b = float64(tempt)
+		} else {
+			b, _ = strconv.ParseFloat(C.GetValue(), 32)
+		}
+		var temp float64 = a + b
+		var temp_I = int(temp)
+		if temp-float64(temp_I) == 0 {
+			return NewInt(temp_I)
+		} else {
+			return NewFloat(temp)
+		}
+	} else {
+		return C.Add(F)
+	}
+
+}
+
+func (F Float) Sub(C Calculable) Calculable {
+	var a, b float64
+	var tempt int
+	a, _ = strconv.ParseFloat(F.GetValue(), 32)
+	if C.GetChecker() == 0 || C.GetChecker() == 100 {
+		if C.GetChecker() == 0 {
+			tempt, _ = strconv.Atoi(C.GetValue())
+			b = float64(tempt)
+		} else {
+			b, _ = strconv.ParseFloat(C.GetValue(), 32)
+		}
+		var temp float64 = a - b
+		var temp_I = int(temp)
+		if temp-float64(temp_I) == 0 {
+			return NewInt(temp_I)
+		} else {
+			return NewFloat(temp)
+		}
+	} else {
+		return C.Sub(F).Mul(NewInt(-1))
+	}
+}
+
+func (F Float) Mul(C Calculable) Calculable {
+	var a, b float64
+	var tempt int
+	a, _ = strconv.ParseFloat(F.GetValue(), 32)
+	if C.GetChecker() == 0 || C.GetChecker() == 100 {
+		if C.GetChecker() == 0 {
+			tempt, _ = strconv.Atoi(C.GetValue())
+			b = float64(tempt)
+		} else {
+			b, _ = strconv.ParseFloat(C.GetValue(), 32)
+		}
+		var temp float64 = a * b
+		var temp_I = int(temp)
+		if temp-float64(temp_I) == 0 {
+			return NewInt(temp_I)
+		} else {
+			return NewFloat(temp)
+		}
+	} else {
+		return C.Mul(F)
+	}
+}
+func (F Float) Div(C Calculable) Calculable {
+	var a, b float64
+	var tempt int
+	a, _ = strconv.ParseFloat(F.GetValue(), 32)
+	if C.GetChecker() == 0 || C.GetChecker() == 100 {
+		if C.GetChecker() == 0 {
+			tempt, _ = strconv.Atoi(C.GetValue())
+			b = float64(tempt)
+		} else {
+			b, _ = strconv.ParseFloat(C.GetValue(), 32)
+		}
+		var temp float64 = a / b
+		var temp_I = int(temp)
+		if temp-float64(temp_I) == 0 {
+			return NewInt(temp_I)
+		} else {
+			return NewFloat(temp)
+		}
+	} else {
+		return NewInt(1).Div(C.Div(F))
+	}
+}
+
+func (F Float) Inverse() Calculable {
+	var temp float64
+	temp = float64(1) / F.Number
+	var temp_i int = int(temp)
+	if temp == float64(temp_i) {
+		return NewInt(temp_i)
+	}
+	return NewFloat(temp)
+}
+
+func (F Float) GetValue() string {
+	return strconv.FormatFloat(F.Number, 'f', 6, 32)
+}
+
+func (F Float) GetChecker() int {
+	return F.checker
+}

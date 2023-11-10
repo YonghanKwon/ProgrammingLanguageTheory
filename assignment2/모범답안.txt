@@ -1,0 +1,55 @@
+#include <stdio.h>
+
+int i =0;
+int a[2] = {1,1};
+
+void Ref(int* px, int* py) {
+  (*px)++; i++; (*py)++;
+}
+
+void VR_C(int x, int y, int* px, int* py) {
+  x++; i++; y++;
+  *px =x; *py = y;
+}
+
+void VR_R(int x, int y, int* (*Ax)(), int* (*Ay)()) {
+  x++; i++; y++;
+  *(Ax()) =x; *(Ay())=y;
+}
+
+void Name(int (*Rx)(), int* (*Wx)(),int (*Ry)(), int* (*Wy)()) {
+  *(Wx()) = Rx() + 1;
+  i++;
+  *(Wy()) = Ry() + 1;
+}
+
+int* addressX() {return &a[i];}
+
+int* addressY() {return &a[i];}
+int thunk_ReadX() {return a[i];}
+int* thunk_WriteX() {return &a[i];}
+int thunk_ReadY() {return a[i];}
+int* thunk_WriteY() {return &a[i];}
+
+void refresh(){
+  i = 0;
+  a[0]=1; a[1]=1;
+}
+
+int main() {
+  Ref(&a[i], &a[i]);
+  printf("By Reference : %d %d\n", a[0], a[1]);
+  refresh();
+
+  VR_C(a[i],a[i], &a[i], &a[i]);
+  printf("By value_result(call) : %d %d\n", a[0], a[1]);
+  refresh();
+
+  VR_R(a[i],a[i], addressX, addressY);
+  printf("By value_result(return) : %d %d\n", a[0], a[1]);
+  refresh();
+
+  Name(thunk_ReadX, thunk_WriteX, thunk_ReadY, thunk_WriteY);
+  printf("By name : %d %d", a[0], a[1]);
+  refresh();
+}

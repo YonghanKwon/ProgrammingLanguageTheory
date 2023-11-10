@@ -1,0 +1,84 @@
+package calculator
+
+import . "calculator/num_init"
+
+//Calculator
+type Stack []Calculable
+
+func (s *Stack) IsEmpty() bool {
+	return len(*s) == 0
+}
+
+func (s *Stack) Push(data Calculable) {
+	*s = append(*s, data)
+}
+
+func (s *Stack) Pop() Calculable {
+	if s.IsEmpty() {
+		return nil
+	} else {
+		top := len(*s) - 1
+		data := (*s)[top]
+		*s = (*s)[:top]
+		return data
+	}
+}
+
+var calculable_stack Stack
+
+type Calculator struct {
+	current_N Calculable
+	counter   int
+}
+
+func (Caltor *Calculator) New() { //계산기 켜기, default 값 0
+	Caltor.current_N = NewInt(0)
+	Caltor.counter = 0 //계산기가 켜진 직후 0의 값이 stack에 push되는 것을 방지
+}
+
+func (Caltor *Calculator) SetValue(C Calculable) {
+	Caltor.current_N = C
+}
+
+func (Caltor *Calculator) GetValue() Calculable {
+	return Caltor.current_N
+}
+
+func (Caltor *Calculator) Enter(Calable Calculable) { //계산기에 값 입력
+	if Caltor.counter != 0 { //계산기에 첫 입력인 경우 0이 stack에 저장될 필요 없음. counter는 처음 또는 초기화 직후에만 0
+		calculable_stack.Push(Caltor.current_N)
+	}
+	Caltor.counter = 1
+	Caltor.current_N = Calable
+}
+
+func (Caltor *Calculator) Operation(s string) {
+	var N1 Calculable = calculable_stack.Pop()
+	var N2 Calculable = Caltor.GetValue()
+
+	if s == "Add" {
+		Caltor.SetValue(N1.Add(N2))
+	} else if s == "Sub" {
+		Caltor.SetValue(N1.Sub(N2))
+	} else if s == "Mul" {
+		Caltor.SetValue(N1.Mul(N2))
+	} else if s == "Div" {
+		Caltor.SetValue(N1.Div(N2))
+	}
+
+}
+
+func (C *Calculator) Clear() { //계산중 취소하고 다른 계산 진행하고 싶을때 Clear
+	C.current_N = NewInt(0) //0으로 초기화
+	C.counter = 0           //계산기가 초기화되므로 이때 초기화된 후의 0이 stack에 push되는 것을 방지하기 위해 설정
+	//stack의 모든 요소 pop해야함
+	var temp Calculable
+	for !calculable_stack.IsEmpty() {
+		temp = calculable_stack.Pop()
+		temp.GetChecker() //의미 없음
+	}
+}
+
+func (C Calculator) GetCurrentValue() string {
+	return C.current_N.GetValue()
+}

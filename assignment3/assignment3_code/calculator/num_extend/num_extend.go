@@ -1,0 +1,541 @@
+package num_extend
+
+import (
+	. "calculator/num_init"
+	"strconv"
+	"strings"
+)
+
+//복소수 및 유리수
+type Rational struct {
+	numerator   int //분자
+	denominator int //분모
+	checker     int
+}
+
+func NewRational(num int, denom int) *Rational { //생성자
+	R := Rational{}
+	R.numerator = num
+	R.denominator = denom
+	R.checker = 50
+	return &R
+}
+
+func Reduction(R Rational) *Rational { //약분
+	var divisor int = 1
+	var num_af, den_af int
+	for i := 2; i <= R.denominator; i++ {
+		if R.denominator%i == 0 {
+			if R.numerator%i == 0 {
+				divisor = i
+			}
+		}
+	}
+	num_af = R.numerator / divisor
+	den_af = R.denominator / divisor
+	R.numerator = num_af
+	R.denominator = den_af
+	return &R
+}
+
+func (R Rational) Add(C Calculable) Calculable {
+	var a Calculable
+	if C.GetChecker() == 0 { //정수일 경우
+		var temp_i int
+		temp_i, _ = strconv.Atoi(C.GetValue())
+		var temp Rational
+		temp = *NewRational(temp_i*R.denominator+R.numerator, R.denominator)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 50 { //유리수일 경우
+		a = C
+		var temp Rational
+		var i1, i2 int
+		slice := strings.Split(a.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		temp = *NewRational(R.numerator*i2+i1*R.denominator, i2*R.denominator)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 100 { //float형
+		var F Calculable
+		var temp_f float64 = float64(R.numerator) / float64(R.denominator)
+		F = NewFloat(temp_f)
+		return F.Add(C)
+	} else { //복소수
+		return C.Add(R)
+	}
+}
+
+func (R Rational) Sub(C Calculable) Calculable {
+	var a Calculable
+	if C.GetChecker() == 0 { //정수일 경우
+		var temp_i int
+		temp_i, _ = strconv.Atoi(C.GetValue())
+		var temp Rational
+		temp = *NewRational(R.numerator-temp_i*R.denominator, R.denominator)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 50 { //유리수일 경우
+		a = C
+		var temp Rational
+		var i1, i2 int
+		slice := strings.Split(a.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		temp = *NewRational(R.numerator*i2-i1*R.denominator, i2*R.denominator)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 100 { //float형
+		var F Calculable
+		var temp_f float64 = float64(R.numerator) / float64(R.denominator)
+		F = NewFloat(temp_f)
+		return F.Sub(C)
+	} else { //복소수
+		return C.Sub(R).Mul(NewInt(-1))
+	}
+}
+
+func (R Rational) Mul(C Calculable) Calculable {
+	var a Calculable
+	if C.GetChecker() == 0 { //정수일 경우
+		var temp_i int
+		temp_i, _ = strconv.Atoi(C.GetValue())
+		var temp Rational
+		temp = *NewRational(R.numerator*temp_i, R.denominator)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 50 { //유리수일 경우
+		a = C
+		var temp Rational
+		var i1, i2 int
+		slice := strings.Split(a.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		temp = *NewRational(R.numerator*i1, R.denominator*i2)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 100 { //float형
+		var F Calculable
+		var temp_f float64 = float64(R.numerator) / float64(R.denominator)
+		F = NewFloat(temp_f)
+		return F.Mul(C)
+	} else { //복소수
+		return C.Mul(R)
+	}
+}
+
+func (R Rational) Div(C Calculable) Calculable {
+	var a Calculable
+	if C.GetChecker() == 0 { //정수일 경우
+		var temp_i int
+		temp_i, _ = strconv.Atoi(C.GetValue())
+		var temp Rational
+		temp = *NewRational(R.numerator, R.denominator*temp_i)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 50 { //유리수일 경우
+		a = C
+		var temp Rational
+		var i1, i2 int
+		slice := strings.Split(a.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		temp = *NewRational(R.numerator*i2, R.denominator*i1)
+		temp = *Reduction(temp)
+		a := NewRational(temp.numerator, temp.denominator)
+		if temp.denominator == 1 {
+			a := NewInt(temp.numerator)
+			return a
+		}
+		return a
+	} else if C.GetChecker() == 100 { //float형
+		var F Calculable
+		var temp_f float64 = float64(R.numerator) / float64(R.denominator)
+		F = NewFloat(temp_f)
+		return F.Div(C)
+	} else { //복소수
+		return NewInt(1).Div(C.Div(R))
+	}
+}
+
+func (R Rational) Inverse() Calculable {
+	var temp int = R.numerator
+	R.numerator = R.denominator
+	R.denominator = temp
+	return R
+}
+
+func (R Rational) GetValue() string {
+	var s1, s2 string
+	s1 = strconv.Itoa(R.numerator)
+	s2 = strconv.Itoa(R.denominator)
+	return s1 + "/" + s2
+}
+
+func (R Rational) GetChecker() int {
+	return R.checker
+}
+
+type Complex struct {
+	real      Calculable //실수부분
+	imaginary Calculable //허수부분
+	checker   int        //복소수 계산 우선순위
+}
+
+func NewComplex(real_N Calculable, imagin_N Calculable) *Complex { //생성자
+	Comp := Complex{}
+	Comp.real = real_N
+	Comp.imaginary = imagin_N
+	Comp.checker = 150
+	Comp.checker = Comp.checker + real_N.GetChecker()*3/50
+	Comp.checker = Comp.checker + imagin_N.GetChecker()/50
+
+	return &Comp
+}
+
+func (Comp Complex) Add(C Calculable) Calculable {
+	if C.GetChecker() == 0 {
+		var i int
+		i, _ = strconv.Atoi(C.GetValue())
+		Comp.real = Comp.real.Add(NewInt(i))
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 50 {
+		var i1, i2 int
+		var rati Calculable
+		slice := strings.Split(C.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		rati = NewRational(i1, i2)
+		Comp.real = Comp.real.Add(rati)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 100 {
+		var F Calculable
+		var temp_f float64
+		temp_f, _ = strconv.ParseFloat(C.GetValue(), 32)
+		F = NewFloat(temp_f)
+		Comp.real = Comp.real.Add(F)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else {
+		var s1, s2 string
+		slice := strings.Split(C.GetValue(), "+")
+		s1 = slice[0]
+		s2 = slice[1]
+		slice_t := strings.Split(s2, "i")
+
+		if (C.GetChecker()-150)/3 == 0 { //real이 int
+			var b_i int
+			b_i, _ = strconv.Atoi(s1)
+			Comp.real = Comp.real.Add(NewInt(b_i))
+		} else if (C.GetChecker()-150)/3 == 1 { //real이 Rational
+			var b1, b2 int
+			var temp Calculable
+			slice_r := strings.Split(s1, "/")
+			b1, _ = strconv.Atoi(slice_r[0])
+			b2, _ = strconv.Atoi(slice_r[1])
+			temp = NewRational(b1, b2)
+			Comp.real = Comp.real.Add(temp)
+		} else { //real이 float
+			var b float64
+			var temp Calculable
+			b, _ = strconv.ParseFloat(s1, 32)
+			temp = NewFloat(b)
+			Comp.real = Comp.real.Add(temp)
+		}
+
+		if (C.GetChecker()-150)%3 == 0 { //imaginary가 int형
+			var a_i int
+			a_i, _ = strconv.Atoi(slice_t[0])
+			Comp.imaginary = Comp.imaginary.Add(NewInt(a_i))
+		} else if (C.GetChecker()-150)%3 == 1 { //imaginary가 Rational
+			var a1, a2 int
+			var temp Calculable
+			slice_r := strings.Split(slice_t[0], "/")
+			a1, _ = strconv.Atoi(slice_r[0])
+			a2, _ = strconv.Atoi(slice_r[1])
+			temp = NewRational(a1, a2)
+			Comp.imaginary = Comp.imaginary.Add(temp)
+		} else { //imaginary가 float
+			var a float64
+			var temp Calculable
+			a, _ = strconv.ParseFloat(slice_t[0], 32)
+			temp = NewFloat(a)
+			Comp.imaginary = Comp.imaginary.Add(temp)
+		}
+
+		return NewComplex(Comp.real, Comp.imaginary)
+	}
+}
+
+func (Comp Complex) Sub(C Calculable) Calculable {
+	if C.GetChecker() == 0 {
+		var i int
+		i, _ = strconv.Atoi(C.GetValue())
+		Comp.real = Comp.real.Sub(NewInt(i))
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 50 {
+		var i1, i2 int
+		var rati Calculable
+		slice := strings.Split(C.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		rati = NewRational(i1, i2)
+		Comp.real = Comp.real.Sub(rati)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 100 {
+		var F Calculable
+		var temp_f float64
+		temp_f, _ = strconv.ParseFloat(C.GetValue(), 32)
+		F = NewFloat(temp_f)
+		Comp.real = Comp.real.Sub(F)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else { //빼는것이 complex
+		var s1, s2 string
+		slice := strings.Split(C.GetValue(), "+")
+		s1 = slice[0] //real
+		s2 = slice[1] //imaginary
+		slice_t := strings.Split(s2, "i")
+
+		if (C.GetChecker()-150)/3 == 0 { //real이 int
+			var b_i int
+			b_i, _ = strconv.Atoi(s1)
+			Comp.real = Comp.real.Sub(NewInt(b_i))
+		} else if (C.GetChecker()-150)/3 == 1 { //real이 Rational
+			var b1, b2 int
+			var temp Calculable
+			slice_r := strings.Split(s1, "/")
+			b1, _ = strconv.Atoi(slice_r[0])
+			b2, _ = strconv.Atoi(slice_r[1])
+			temp = NewRational(b1, b2)
+			Comp.real = Comp.real.Sub(temp)
+		} else { //real이 float
+			var b float64
+			var temp Calculable
+			b, _ = strconv.ParseFloat(s1, 32)
+			temp = NewFloat(b)
+			Comp.real = Comp.real.Sub(temp)
+		}
+
+		if (C.GetChecker()-150)%3 == 0 { //imaginary가 int형
+			var a_i int
+			a_i, _ = strconv.Atoi(slice_t[0])
+			Comp.imaginary = Comp.imaginary.Sub(NewInt(a_i))
+		} else if (C.GetChecker()-150)%3 == 1 { //imaginary가 Rational
+			var a1, a2 int
+			var temp Calculable
+			slice_r := strings.Split(slice_t[0], "/")
+			a1, _ = strconv.Atoi(slice_r[0])
+			a2, _ = strconv.Atoi(slice_r[1])
+			temp = NewRational(a1, a2)
+			Comp.imaginary = Comp.imaginary.Sub(temp)
+		} else { //imaginary가 float
+			var a float64
+			var temp Calculable
+			a, _ = strconv.ParseFloat(slice_t[0], 32)
+			temp = NewFloat(a)
+			Comp.imaginary = Comp.imaginary.Sub(temp)
+		}
+
+		return NewComplex(Comp.real, Comp.imaginary)
+	}
+}
+
+func (Comp Complex) Mul(C Calculable) Calculable {
+	if C.GetChecker() == 0 {
+		var i int
+		i, _ = strconv.Atoi(C.GetValue())
+		Comp.real = Comp.real.Mul(NewInt(i))
+		Comp.imaginary = Comp.imaginary.Mul(NewInt(i))
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 50 {
+		var i1, i2 int
+		var rati Calculable
+		slice := strings.Split(C.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		rati = NewRational(i1, i2)
+		Comp.real = Comp.real.Mul(rati)
+		Comp.imaginary = Comp.imaginary.Mul(rati)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 100 {
+		var F Calculable
+		var temp_f float64
+		temp_f, _ = strconv.ParseFloat(C.GetValue(), 32)
+		F = NewFloat(temp_f)
+		Comp.real = Comp.real.Mul(F)
+		Comp.imaginary = Comp.imaginary.Mul(F)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else {
+		var s1, s2 string
+		var comp_temp Complex = *NewComplex(NewInt(0), NewInt(0))
+		slice := strings.Split(C.GetValue(), "+")
+		s1 = slice[0]
+		s2 = slice[1]
+		slice_t := strings.Split(s2, "i")
+
+		if (C.GetChecker()-150)/3 == 0 { //real이 int
+			var b_i int
+			b_i, _ = strconv.Atoi(s1)
+			comp_temp.real = NewInt(b_i)
+		} else if (C.GetChecker()-150)/3 == 1 { //real이 Rational
+			var b1, b2 int
+			slice_r := strings.Split(s1, "/")
+			b1, _ = strconv.Atoi(slice_r[0])
+			b2, _ = strconv.Atoi(slice_r[1])
+			comp_temp.real = NewRational(b1, b2)
+		} else { //real이 float
+			var b float64
+			b, _ = strconv.ParseFloat(s1, 32)
+			comp_temp.real = NewFloat(b)
+		}
+
+		if (C.GetChecker()-150)%3 == 0 { //imaginary가 int형
+			var a_i int
+			a_i, _ = strconv.Atoi(slice_t[0])
+			comp_temp.imaginary = NewInt(a_i)
+		} else if (C.GetChecker()-150)%3 == 1 { //imaginary가 Rational
+			var a1, a2 int
+			slice_r := strings.Split(slice_t[0], "/")
+			a1, _ = strconv.Atoi(slice_r[0])
+			a2, _ = strconv.Atoi(slice_r[1])
+			comp_temp.imaginary = NewRational(a1, a2)
+		} else { //imaginary가 float
+			var a float64
+			a, _ = strconv.ParseFloat(slice_t[0], 32)
+			comp_temp.imaginary = NewFloat(a)
+		}
+		var Com_real_temp Calculable = Comp.real
+		Comp.real = Com_real_temp.Mul(comp_temp.real).Sub(Comp.imaginary.Mul(comp_temp.imaginary))
+		Comp.imaginary = Com_real_temp.Mul(comp_temp.imaginary).Add(Comp.imaginary.Mul(comp_temp.real))
+		return NewComplex(Comp.real, Comp.imaginary)
+	}
+}
+
+func (Comp Complex) Div(C Calculable) Calculable {
+	if C.GetChecker() == 0 { //Int형으로 나누기
+		var i int
+		i, _ = strconv.Atoi(C.GetValue())
+		Comp.real = Comp.real.Div(NewInt(i))
+		Comp.imaginary = Comp.imaginary.Div(NewInt(i))
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 50 { //Rational형으로 나누기
+		var i1, i2 int
+		var rati Calculable
+		slice := strings.Split(C.GetValue(), "/")
+		i1, _ = strconv.Atoi(slice[0])
+		i2, _ = strconv.Atoi(slice[1])
+		rati = NewRational(i1, i2)
+		Comp.real = Comp.real.Div(rati)
+		Comp.imaginary = Comp.imaginary.Div((rati))
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else if C.GetChecker() == 100 { //float형으로 나누기
+		var F Calculable
+		var temp_f float64
+		temp_f, _ = strconv.ParseFloat(C.GetValue(), 32)
+		F = NewFloat(temp_f)
+		Comp.real = Comp.real.Div(F)
+		Comp.imaginary = Comp.imaginary.Div(F)
+		return NewComplex(Comp.real, Comp.imaginary)
+	} else { //Complex형으로 나누기
+		var s1, s2 string
+		var comp_temp Complex
+		comp_temp = *NewComplex(NewInt(0), NewInt(0))
+		slice := strings.Split(C.GetValue(), "+")
+		s1 = slice[0]
+		s2 = slice[1]
+		slice_t := strings.Split(s2, "i")
+
+		if (C.GetChecker()-150)/3 == 0 { //real이 int
+			var b_i int
+			b_i, _ = strconv.Atoi(s1)
+			comp_temp.real = NewInt(b_i)
+		} else if (C.GetChecker()-150)/3 == 1 { //real이 Rational
+			var b1, b2 int
+			slice_r := strings.Split(s1, "/")
+			b1, _ = strconv.Atoi(slice_r[0])
+			b2, _ = strconv.Atoi(slice_r[1])
+			comp_temp.real = NewRational(b1, b2)
+		} else { //real이 float
+			var b float64
+			b, _ = strconv.ParseFloat(s1, 32)
+			comp_temp.real = NewFloat(b)
+		}
+
+		if (C.GetChecker()-150)%3 == 0 { //imaginary가 int형
+			var a_i int
+			a_i, _ = strconv.Atoi(slice_t[0])
+			comp_temp.imaginary = NewInt(a_i)
+		} else if (C.GetChecker()-150)%3 == 1 { //imaginary가 Rational
+			var a1, a2 int
+			slice_r := strings.Split(slice_t[0], "/")
+			a1, _ = strconv.Atoi(slice_r[0])
+			a2, _ = strconv.Atoi(slice_r[1])
+			comp_temp.imaginary = NewRational(a1, a2)
+		} else { //imaginary가 float
+			var a float64
+			a, _ = strconv.ParseFloat(slice_t[0], 32)
+			comp_temp.imaginary = NewFloat(a)
+		}
+		var divisor Calculable
+		var Com_real_temp Calculable = Comp.real
+		divisor = comp_temp.real.Mul(comp_temp.real).Add(comp_temp.imaginary.Mul(comp_temp.imaginary))
+		Comp.real = Com_real_temp.Mul(comp_temp.real).Add(Comp.imaginary.Mul(comp_temp.imaginary)).Div(divisor)
+		Comp.imaginary = Comp.imaginary.Mul(comp_temp.real).Sub(Com_real_temp.Mul(comp_temp.imaginary)).Div(divisor)
+		return NewComplex(Comp.real, Comp.imaginary)
+	}
+}
+
+func (Comp Complex) Inverse() Calculable {
+	var real_N, imagin_N Calculable
+	real_N = Comp.real
+	imagin_N = Comp.imaginary
+
+	var divisor Calculable
+	divisor = real_N.Mul(real_N).Add(imagin_N.Mul(imagin_N))
+	Comp.real = Comp.real.Div(divisor)
+	Comp.imaginary = Comp.imaginary.Div(divisor).Mul(NewInt(-1))
+	return Comp
+}
+
+func (Comp Complex) GetValue() string {
+	return Comp.real.GetValue() + "+" + Comp.imaginary.GetValue() + "i"
+}
+
+func (Comp Complex) GetChecker() int {
+	return Comp.checker
+}
